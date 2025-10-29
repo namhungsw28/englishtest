@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🐻 English Fun Quiz for Kids 🐝</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .feedback {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-top: 1rem;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .show-feedback {
+      opacity: 1;
+    }
+    .correct-bg {
+      background-color: #4ade80 !important; /* xanh đậm */
+      color: white;
+    }
+    .wrong-bg {
+      background-color: #ef4444 !important; /* đỏ đậm */
+      color: white;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-b from-blue-100 to-pink-100 flex flex-col items-center min-h-screen p-6">
+  <h1 class="text-4xl font-bold mb-8 text-pink-600 drop-shadow-lg">🐝 English Fun Quiz 🐝</h1>
+
+  <div id="quiz" class="bg-white shadow-2xl rounded-3xl p-8 max-w-md w-full text-center transition-all duration-700"></div>
+
+  <script>
+    let questions = [];
+    let current = 0;
+
+    async function loadQuestions() {
+      try {
+        const res = await fetch("questions.json");
+        questions = await res.json();
+        showQuestion();
+      } catch (err) {
+        document.getElementById("quiz").innerHTML =
+          "<p class='text-red-500'>⚠️ Cannot load questions!</p>";
+      }
+    }
+
+    function showQuestion() {
+      const q = questions[current];
+      const div = document.getElementById('quiz');
+      div.classList.remove('correct-bg', 'wrong-bg');
+
+      div.innerHTML = `
+        <h2 class="text-xl font-semibold mb-4 text-gray-700">${q.question}</h2>
+        <div id="answers" class="space-y-3"></div>
+        <div id="feedback" class="feedback"></div>
+      `;
+      const answersDiv = document.getElementById('answers');
+
+      if (q.type === "multiple") renderMultiple(q, answersDiv);
+      else if (q.type === "fill") renderFill(q, answersDiv);
+      else if (q.type === "truefalse") renderTrueFalse(q, answersDiv);
+      else if (q.type === "match") renderMatch(q, answersDiv);
+      else if (q.type === "imagechoice") renderImageChoice(q, answersDiv);
+      else if (q.type === "listen") renderListen(q, answersDiv);
+      else if (q.type === "translate") renderTranslate(q, answersDiv);
+    }
+
+    function renderMultiple(q, answersDiv) {
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.className = "block w-full py-3 text-lg rounded-xl bg-blue-300 hover:bg-blue-400 text-white font-medium transition";
+        btn.onclick = () => checkAnswer(opt, q.answer, btn);
+        answersDiv.appendChild(btn);
+      });
+    }
+
+    function renderFill(q, answersDiv) {
+      answersDiv.innerHTML = `
+        <input id="inputAnswer" class="border p-2 rounded-xl w-3/4 text-center text-lg" placeholder="Type your answer">
+        <button onclick="checkAnswer(document.getElementById('inputAnswer').value, '${q.answer}', null)"
+                class="bg-blue-400 px-4 py-2 rounded-xl ml-2 text-white font-semibold hover:bg-blue-500">
+          Submit
+        </button>`;
+    }
+
+    function renderTrueFalse(q, answersDiv) {
+      ["True", "False"].forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.className = "block w-full py-3 text-lg rounded-xl bg-yellow-300 hover:bg-yellow-400 transition font-medium";
+        btn.onclick = () => checkAnswer(opt, q.answer, btn);
+        answersDiv.appendChild(btn);
+      });
+    }
+
+    function renderMatch(q, answersDiv) {
+      const words = Object.keys(q.pairs);
+      const meanings = Object.values(q.pairs).sort(() => 0.5 - Math.random());
+      words.forEach(word => {
+        const select = document.createElement('select');
+        select.className = "border rounded-xl p-2 w-full";
+        select.innerHTML = "<option value=''>Select meaning</option>" +
+          meanings.map(m => `<option value='${m}'>${m}</option>`).join('');
+        const label = document.createElement('div');
+        label.innerHTML = `<b>${word}</b>`;
+        answersDiv.appendChild(label);
+        answersDiv.appendChild(select);
+      });
+      const btn = document.createElement('button');
+      btn.textContent = "Check";
+      btn.className = "bg-blue-400 px-4 py-2 rounded-xl mt-3 text-white hover:bg-blue-500";
+      btn.onclick = () => {
+        const selects = answersDiv.querySelectorAll('select');
+        let correct = true;
+        selects.forEach((s, i) => {
+          const w = words[i];
+          if (q.pairs[w] === s.value) s.classList.add("bg-green-200");
+          else {
+            s.classList.add("bg-red-200");
+            correct = false;
+          }
+        });
+        handleResult(correct);
+      };
+      answersDiv.appendChild(btn);
+    }
+
+    function renderImageChoice(q, answersDiv) {
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "flex flex-col items-center w-full bg-pink-100 hover:bg-pink-200 rounded-xl p-3 transition";
+        btn.innerHTML = `<img src="${opt.image}" class="w-24 h-24 mb-2"><span class="font-semibold">${opt.text}</span>`;
+        btn.onclick = () => checkAnswer(opt.text, q.answer, btn);
+        answersDiv.appendChild(btn);
+      });
+    }
+
+    function renderListen(q, answersDiv) {
+      const audio = document.createElement('audio');
+      audio.src = q.audio;
+      audio.controls = true;
+      audio.className = "mx-auto mb-3";
+      answersDiv.appendChild(audio);
+      renderMultiple(q, answersDiv);
+    }
+
+    function renderTranslate(q, answersDiv) {
+      answersDiv.innerHTML = `
+        <input id="inputAnswer" class="border p-2 rounded-xl w-3/4 text-center text-lg" placeholder="Type translation">
+        <button onclick="checkAnswer(document.getElementById('inputAnswer').value, '${q.answer}', null)"
+                class="bg-blue-400 px-4 py-2 rounded-xl ml-2 text-white font-semibold hover:bg-blue-500">
+          Submit
+        </button>`;
+    }
+
+    function checkAnswer(ans, correct, btn) {
+      const normalized = ans.trim().toLowerCase();
+      const right = correct.trim().toLowerCase();
+      const div = document.getElementById('quiz');
+      const feedback = document.getElementById('feedback');
+
+      if (btn) {
+        const buttons = document.querySelectorAll("#answers button");
+        buttons.forEach(b => {
+          b.disabled = true;
+          if (b.textContent.toLowerCase() === right) b.classList.add("bg-green-500", "text-white");
+          else if (b.textContent.toLowerCase() === normalized && normalized !== right)
+            b.classList.add("bg-red-500", "text-white");
+        });
+      } else {
+        const input = document.getElementById('inputAnswer');
+        input.classList.add(normalized === right ? "bg-green-200" : "bg-red-200");
+      }
+
+      if (normalized === right) {
+        div.classList.add('correct-bg');
+        feedback.textContent = "✅ Great job! That's correct!";
+        feedback.classList.add("text-green-800");
+      } else {
+        div.classList.add('wrong-bg');
+        feedback.textContent = "❌ Oops! That's not correct.";
+        feedback.classList.add("text-white");
+      }
+      feedback.classList.add('show-feedback');
+
+      setTimeout(() => {
+        current++;
+        if (current < questions.length) showQuestion();
+        else showResult();
+      }, 1500);
+    }
+
+    function handleResult(correct) {
+      const div = document.getElementById('quiz');
+      const feedback = document.getElementById('feedback');
+      if (correct) {
+        div.classList.add('correct-bg');
+        feedback.textContent = "✅ Great job!";
+        feedback.classList.add("text-green-800", "show-feedback");
+      } else {
+        div.classList.add('wrong-bg');
+        feedback.textContent = "❌ Try again next time!";
+        feedback.classList.add("text-white", "show-feedback");
+      }
+      setTimeout(() => {
+        current++;
+        if (current < questions.length) showQuestion();
+        else showResult();
+      }, 1500);
+    }
+
+    function showResult() {
+      document.getElementById('quiz').innerHTML = `
+        <h2 class="text-3xl text-pink-600 font-bold mb-2 animate-bounce">🎉 Great job! 🎉</h2>
+        <p class="text-gray-700 mb-4">You finished all questions!</p>
+        <button onclick="restart()" class="bg-yellow-400 px-4 py-2 rounded-xl hover:bg-yellow-500 text-white font-semibold">
+          Play Again
+        </button>`;
+    }
+
+    function restart() {
+      current = 0;
+      showQuestion();
+    }
+
+    loadQuestions();
+  </script>
+</body>
+</html>

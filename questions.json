@@ -1,0 +1,71 @@
+[
+  {
+    "type": "multiple",
+    "question": "What color is the sky?",
+    "options": ["Red", "Blue", "Green", "Yellow"],
+    "answer": "Blue"
+  },
+  {
+    "type": "multiple",
+    "question": "Which animal says 'Meow'?",
+    "options": ["Dog", "Cat", "Cow", "Duck"],
+    "answer": "Cat"
+  },
+  {
+    "type": "fill",
+    "question": "The sun is very ___ today.",
+    "answer": "bright"
+  },
+  {
+    "type": "multiple",
+    "question": "How many legs does a spider have?",
+    "options": ["6", "8", "10", "4"],
+    "answer": "8"
+  },
+  {
+    "type": "fill",
+    "question": "An ___ can fly in the sky.",
+    "answer": "airplane"
+  },
+  {
+    "type": "truefalse",
+    "question": "A dog can fly in the sky.",
+    "answer": "False"
+  },
+  {
+    "type": "truefalse",
+    "question": "The word 'apple' is a fruit.",
+    "answer": "True"
+  },
+  {
+    "type": "match",
+    "question": "Match the words with their meanings.",
+    "pairs": {
+      "cat": "con mèo",
+      "dog": "con chó",
+      "bird": "con chim"
+    }
+  },
+  {
+    "type": "imagechoice",
+    "question": "Which one is the apple?",
+    "options": [
+      { "image": "https://cdn-icons-png.flaticon.com/512/415/415733.png", "text": "Apple" },
+      { "image": "https://cdn-icons-png.flaticon.com/512/616/616408.png", "text": "Banana" },
+      { "image": "https://cdn-icons-png.flaticon.com/512/135/135620.png", "text": "Carrot" }
+    ],
+    "answer": "Apple"
+  },
+  {
+    "type": "listen",
+    "question": "Listen and choose the correct word.",
+    "audio": "https://www.soundjay.com/button/beep-07.wav",
+    "options": ["Dog", "Cat", "Fish"],
+    "answer": "Dog"
+  },
+  {
+    "type": "translate",
+    "question": "Translate this word: 'Sun'",
+    "answer": "mặt trời"
+  }
+]

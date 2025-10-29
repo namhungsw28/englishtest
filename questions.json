@@ -67,5 +67,11 @@
     "type": "translate",
     "question": "Translate this word: 'Sun'",
     "answer": "mặt trời"
+  },
+  {
+    "type": "translate",
+    "question": "Translate this word: 'Kikukawa'",
+    "answer": "công ty nhật"
   }
+
 ]
